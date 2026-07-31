@@ -7,6 +7,9 @@ export const pool = new pg.Pool({
   max: 20,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,
+  ...(process.env.NODE_ENV === "production" && {
+    ssl: { rejectUnauthorized: false },
+  }),
 });
 
 // Surface connection errors at the pool level rather than silently dropping them.
