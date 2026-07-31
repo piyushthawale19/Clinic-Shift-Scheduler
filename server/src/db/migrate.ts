@@ -5,7 +5,10 @@ import { fileURLToPath } from "url";
 import { pool } from "./pool.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const MIGRATIONS_DIR = path.resolve(__dirname, "migrations");
+let MIGRATIONS_DIR = path.resolve(__dirname, "migrations");
+if (!fs.existsSync(MIGRATIONS_DIR)) {
+  MIGRATIONS_DIR = path.resolve(__dirname, "../../src/db/migrations");
+}
 
 export async function runMigrations(): Promise<void> {
   const client = await pool.connect();

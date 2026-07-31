@@ -4,7 +4,7 @@ services:
     env: node
     rootDir: server
     buildCommand: npm install && npm run build
-    startCommand: npm start
+    startCommand: npm run seed:prod && npm start
     envVars:
       - key: DATABASE_URL
         fromDatabase:
