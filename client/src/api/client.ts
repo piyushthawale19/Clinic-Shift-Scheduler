@@ -43,12 +43,17 @@ async function request<T>(
 }
 
 export class ApiError extends Error {
+  status: number;
+  details?: unknown;
+
   constructor(
-    public status: number,
+    status: number,
     message: string,
-    public details?: unknown
+    details?: unknown
   ) {
     super(message);
+    this.status = status;
+    this.details = details;
   }
 }
 
