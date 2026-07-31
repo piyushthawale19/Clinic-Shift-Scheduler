@@ -11,8 +11,29 @@ if (!fs.existsSync(MIGRATIONS_DIR)) {
 }
 
 export async function runMigrations(): Promise<void> {
+  if (!process.env.DATABASE_URL) {
+    console.error("Migration failed: DATABASE_URL environment variable is missing.");
+    throw new Error("DATABASE_URL is missing");
+  }
+
   const client = await pool.connect();
   try {
+    // Log connected database details
+    const { rows: dbInfo } = await client.query(
+      "SELECT current_database() AS db_name"
+    );
+    const dbName = dbInfo[0]?.db_name;
+    let dbHost = "unknown";
+    try {
+      // Safe parsing of DATABASE_URL
+      const dbUrl = new URL(process.env.DATABASE_URL);
+      dbHost = dbUrl.hostname;
+    } catch {
+      // Fallback
+      dbHost = process.env.DATABASE_URL.split("@")[1]?.split("/")[0]?.split(":")[0] || "unknown";
+    }
+    console.log(`Connected to Database Host: ${dbHost}, Database Name: ${dbName}`);
+
     // Ensure the migrations tracking table exists before checking applied migrations.
     await client.query(`
       CREATE TABLE IF NOT EXISTS _migrations (
@@ -54,6 +75,10 @@ export async function runMigrations(): Promise<void> {
     }
 
     console.log("Migrations complete.");
+    console.log("Migration status: SUCCESS");
+  } catch (err) {
+    console.error("Migration status: FAILED", err);
+    throw err;
   } finally {
     client.release();
   }
